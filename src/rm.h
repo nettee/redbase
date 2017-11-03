@@ -17,6 +17,7 @@
 // should therefore be self-contained (i.e., should not depend upon
 // declarations in any other file).
 
+#include <vector>
 // Do not change the following includes
 #include "redbase.h"
 #include "rm_rid.h"
@@ -69,8 +70,9 @@ public:
 
 private:
 
-    PF_FileHandle pf_fileHandle; // file handle of the paged file
+    PF_FileHandle pf_fh; // file handle of the paged file
     RM_FileHdr hdr; // file header
+    std::vector<int> pinnedPages; // pageNums of pages pinned in buffer
     int bFileHandleOpen; // File open flag
 };
 

@@ -112,23 +112,26 @@ RC RM_Manager::OpenFile(const char *fileName, RM_FileHandle& fileHandle)
 	}
 
 	// Open the paged file
-	if ((rc = pPfMgr->OpenFile(fileName, fileHandle.pf_fileHandle)) != 0) {
+	if ((rc = pPfMgr->OpenFile(fileName, fileHandle.pf_fh)) != 0) {
 		return rc;
 	}
 
 	// Read the file header
-	PF_PageHandle pageHandle;
-	if ((rc = fileHandle.pf_fileHandle.GetFirstPage(pageHandle)) != 0) {
-		return rc;
-	}
-
+	PF_PageHandle headerPageHdl;
+	int headerPageNum;
 	char *pData;
-	if ((rc = pageHandle.GetData(pData)) != 0) {
+	if ((rc = fileHandle.pf_fh.GetFirstPage(headerPageHdl)) ||
+			(rc = headerPageHdl.GetPageNum(headerPageNum)) ||
+			(rc = headerPageHdl.GetData(pData))) {
 		return rc;
 	}
 
 	memcpy((char *)&fileHandle.hdr, pData, sizeof(RM_FileHdr));
-	printf("RM_Manager::OpenFile record size = %d\n", fileHandle.hdr.recordSize);
+
+	if ((rc = fileHandle.pf_fh.MarkDirty(headerPageNum))) {
+		return rc;
+	}
+	fileHandle.pinnedPages.push_back(headerPageNum);
 
 	fileHandle.bFileHandleOpen = TRUE;
 
@@ -156,10 +159,15 @@ RC RM_Manager::CloseFile(RM_FileHandle &fileHandle)
 		return RM_FILE_HANDLE_CLOSED;
 	}
 
-	// TODO write all pages
+	for (std::vector<int>::iterator it = fileHandle.pinnedPages.begin();
+			it != fileHandle.pinnedPages.end();
+			++it) {
+		printf("unpin page %d\n", *it);
+		fileHandle.pf_fh.UnpinPage(*it);
+	}
 
 	// Closed the paged file
-	if ((rc = pPfMgr->CloseFile(fileHandle.pf_fileHandle)) != 0) {
+	if ((rc = pPfMgr->CloseFile(fileHandle.pf_fh)) != 0) {
 		return rc;
 	}
 

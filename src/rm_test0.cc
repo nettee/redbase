@@ -245,12 +245,12 @@ RC Test1(void)
 	if ((rc = CreateFile(FILENAME, sizeof(TestRec))) != 0) {
 		return rc;
 	}
-//	if ((rc = OpenFile(FILENAME, fh)) != 0) {
-//		return rc;
-//	}
-//	if ((rc = CloseFile(FILENAME, fh)) != 0) {
-//		return rc;
-//	}
+	if ((rc = OpenFile(FILENAME, fh)) != 0) {
+		return rc;
+	}
+	if ((rc = CloseFile(FILENAME, fh)) != 0) {
+		return rc;
+	}
 
 	LsFile(FILENAME);
 
