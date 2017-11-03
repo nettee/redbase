@@ -4,11 +4,14 @@
 // Authors:     nettee (nettee.liu@gmail.com
 //
 
+#include <cstdio>
+#include <cstring>
+#include <iostream>
 #include "rm.h"
 
 RM_Manager::RM_Manager(PF_Manager &pfm)
 {
-	pfMgr = pfm;
+	pPfMgr = &pfm;
 }
 
 RM_Manager::~RM_Manager()
@@ -32,11 +35,48 @@ RC RM_Manager::CreateFile(const char *fileName, int recordSize)
 	}
 
 	// Create a paged file
-	if ((rc = pfMgr.CreateFile(fileName)) != 0) {
+	if ((rc = pPfMgr->CreateFile(fileName)) != 0) {
 		return rc;
 	}
 
-	// TODO create header page and store record size
+//	PF_FileHandle pf_fileHandle;
+//	if ((rc = pfMgr.OpenFile(fileName, pf_fileHandle)) != 0) {
+//		return rc;
+//	}
+//
+//	// Create a new page as header page
+//	PF_PageHandle pf_pageHandle;
+//	if ((rc = pf_fileHandle.AllocatePage(pf_pageHandle)) != 0) {
+//		return rc;
+//	}
+//	char *pData;
+//	if ((rc = pf_pageHandle.GetData(pData)) != 0) {
+//		return rc;
+//	}
+//	int pageNum;
+//	if ((rc = pf_pageHandle.GetPageNum(pageNum)) != 0) {
+//		return rc;
+//	}
+//
+//	// Initialize the file header
+//	char hdrBuf[sizeof(RM_FileHdr)];
+//	memset(hdrBuf, 0, sizeof(RM_FileHdr));
+//
+//	RM_FileHdr *hdr = (RM_FileHdr *)hdrBuf;
+//	hdr->recordSize = recordSize;
+//	memcpy(pData, hdrBuf, sizeof(RM_FileHdr));
+//
+//	// Write the file header to the first page
+//	if ((rc = pf_fileHandle.MarkDirty(pageNum)) != 0) {
+//		return rc;
+//	}
+//	if ((rc = pf_fileHandle.ForcePages(pageNum)) != 0) {
+//		return rc;
+//	}
+//
+//	if ((rc = pfMgr.CloseFile(pf_fileHandle)) != 0) {
+//		return rc;
+//	}
 
 	// Return ok
 	return 0;
@@ -51,7 +91,7 @@ RC RM_Manager::CreateFile(const char *fileName, int recordSize)
  */
 RC RM_Manager::DestroyFile(const char *fileName)
 {
-	return pfMgr.DestroyFile(fileName);
+	return pPfMgr->DestroyFile(fileName);
 }
 
 /*
@@ -78,7 +118,7 @@ RC RM_Manager::OpenFile(const char *fileName, RM_FileHandle& fileHandle)
 	}
 
 	// Open a paged file
-	if ((rc = pfMgr.OpenFile(fileName, fileHandle.pf_fileHandle)) != 0) {
+	if ((rc = pPfMgr->OpenFile(fileName, fileHandle.pf_fileHandle)) != 0) {
 		return rc;
 	}
 
@@ -113,7 +153,7 @@ RC RM_Manager::CloseFile(RM_FileHandle &fileHandle)
 	// TODO write all pages
 
 	// Closed the paged file
-	if ((rc = pfMgr.CloseFile(fileHandle.pf_fileHandle)) != 0) {
+	if ((rc = pPfMgr->CloseFile(fileHandle.pf_fileHandle)) != 0) {
 		return rc;
 	}
 
