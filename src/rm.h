@@ -69,7 +69,8 @@ public:
 
 private:
 
-    PF_FileHandle pf_fileHandle;
+    PF_FileHandle pf_fileHandle; // file handle of the paged file
+    RM_FileHdr hdr; // file header
     int bFileHandleOpen; // File open flag
 };
 

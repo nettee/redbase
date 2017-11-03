@@ -46,15 +46,11 @@ RC RM_Manager::CreateFile(const char *fileName, int recordSize)
 
 	// Create a new page as header page
 	PF_PageHandle pf_pageHandle;
-	if ((rc = pf_fileHandle.AllocatePage(pf_pageHandle)) != 0) {
-		return rc;
-	}
 	char *pData;
-	if ((rc = pf_pageHandle.GetData(pData)) != 0) {
-		return rc;
-	}
 	int pageNum;
-	if ((rc = pf_pageHandle.GetPageNum(pageNum)) != 0) {
+	if ((rc = pf_fileHandle.AllocatePage(pf_pageHandle)) ||
+			(rc = pf_pageHandle.GetData(pData)) ||
+			(rc = pf_pageHandle.GetPageNum(pageNum))) {
 		return rc;
 	}
 
@@ -67,10 +63,8 @@ RC RM_Manager::CreateFile(const char *fileName, int recordSize)
 	memcpy(pData, hdrBuf, sizeof(RM_FileHdr));
 
 	// Write the file header to the first page
-	if ((rc = pf_fileHandle.MarkDirty(pageNum)) != 0) {
-		return rc;
-	}
-	if ((rc = pf_fileHandle.ForcePages(pageNum)) != 0) {
+	if ((rc = pf_fileHandle.MarkDirty(pageNum)) ||
+			(rc = pf_fileHandle.UnpinPage(pageNum))) {
 		return rc;
 	}
 
@@ -117,12 +111,24 @@ RC RM_Manager::OpenFile(const char *fileName, RM_FileHandle& fileHandle)
 		return RM_FILE_HANDLE_OPEN;
 	}
 
-	// Open a paged file
+	// Open the paged file
 	if ((rc = pPfMgr->OpenFile(fileName, fileHandle.pf_fileHandle)) != 0) {
 		return rc;
 	}
 
-	// TODO read the header page
+	// Read the file header
+	PF_PageHandle pageHandle;
+	if ((rc = fileHandle.pf_fileHandle.GetFirstPage(pageHandle)) != 0) {
+		return rc;
+	}
+
+	char *pData;
+	if ((rc = pageHandle.GetData(pData)) != 0) {
+		return rc;
+	}
+
+	memcpy((char *)&fileHandle.hdr, pData, sizeof(RM_FileHdr));
+	printf("RM_Manager::OpenFile record size = %d\n", fileHandle.hdr.recordSize);
 
 	fileHandle.bFileHandleOpen = TRUE;
 

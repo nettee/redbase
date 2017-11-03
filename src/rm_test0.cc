@@ -211,7 +211,7 @@ RC DestroyFile(char *fileName)
 RC OpenFile(char *fileName, RM_FileHandle &fh)
 {
     printf("\nopening %s\n", fileName);
-    return 0;
+    return (rmm.OpenFile(fileName, fh));
 }
 
 //
@@ -223,7 +223,7 @@ RC CloseFile(char *fileName, RM_FileHandle &fh)
 {
     if (fileName != NULL)
         printf("\nClosing %s\n", fileName);
-    return 0;
+    return (rmm.CloseFile(fh));
 }
 
 
@@ -236,7 +236,8 @@ RC CloseFile(char *fileName, RM_FileHandle &fh)
 //
 RC Test1(void)
 {
-	RC            rc;
+	RC rc;
+	RM_FileHandle fh;
 
 	printf("test1 starting ****************\n");
 
@@ -244,12 +245,18 @@ RC Test1(void)
 	if ((rc = CreateFile(FILENAME, sizeof(TestRec))) != 0) {
 		return rc;
 	}
+//	if ((rc = OpenFile(FILENAME, fh)) != 0) {
+//		return rc;
+//	}
+//	if ((rc = CloseFile(FILENAME, fh)) != 0) {
+//		return rc;
+//	}
 
 	LsFile(FILENAME);
 
-	if ((rc = DestroyFile(FILENAME)) != 0) {
-		return rc;
-	}
+//	if ((rc = DestroyFile(FILENAME)) != 0) {
+//		return rc;
+//	}
 
 	printf("\ntest1 done ********************\n");
 	return (0);
