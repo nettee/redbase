@@ -240,6 +240,7 @@ RC Test1(void)
 
 	printf("test1 starting ****************\n");
 
+	cout << "record size = " << sizeof(TestRec) << endl;
 	if ((rc = CreateFile(FILENAME, sizeof(TestRec))) != 0) {
 		return rc;
 	}
