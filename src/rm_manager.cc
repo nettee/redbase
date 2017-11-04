@@ -34,13 +34,10 @@ RC RM_Manager::CreateFile(const char *fileName, int recordSize)
 		return RM_RECORD_SIZE_TOO_LARGE;
 	}
 
-	// Create a paged file
-	if ((rc = pPfMgr->CreateFile(fileName)) != 0) {
-		return rc;
-	}
-
-	PF_FileHandle pf_fileHandle;
-	if ((rc = pPfMgr->OpenFile(fileName, pf_fileHandle)) != 0) {
+	// Create and open a paged file
+	PF_FileHandle pf_fileHdl;
+	if ((rc = pPfMgr->CreateFile(fileName)) ||
+			(rc = pPfMgr->OpenFile(fileName, pf_fileHdl))) {
 		return rc;
 	}
 
@@ -48,7 +45,7 @@ RC RM_Manager::CreateFile(const char *fileName, int recordSize)
 	PF_PageHandle pf_pageHandle;
 	char *pData;
 	int pageNum;
-	if ((rc = pf_fileHandle.AllocatePage(pf_pageHandle)) ||
+	if ((rc = pf_fileHdl.AllocatePage(pf_pageHandle)) ||
 			(rc = pf_pageHandle.GetData(pData)) ||
 			(rc = pf_pageHandle.GetPageNum(pageNum))) {
 		return rc;
@@ -63,12 +60,12 @@ RC RM_Manager::CreateFile(const char *fileName, int recordSize)
 	memcpy(pData, hdrBuf, sizeof(RM_FileHdr));
 
 	// Write the file header to the first page
-	if ((rc = pf_fileHandle.MarkDirty(pageNum)) ||
-			(rc = pf_fileHandle.UnpinPage(pageNum))) {
+	if ((rc = pf_fileHdl.MarkDirty(pageNum)) ||
+			(rc = pf_fileHdl.UnpinPage(pageNum))) {
 		return rc;
 	}
 
-	if ((rc = pPfMgr->CloseFile(pf_fileHandle)) != 0) {
+	if ((rc = pPfMgr->CloseFile(pf_fileHdl)) != 0) {
 		return rc;
 	}
 
@@ -112,7 +109,7 @@ RC RM_Manager::OpenFile(const char *fileName, RM_FileHandle& fileHandle)
 	}
 
 	// Open the paged file
-	if ((rc = pPfMgr->OpenFile(fileName, fileHandle.pf_fh)) != 0) {
+	if ((rc = pPfMgr->OpenFile(fileName, fileHandle.pf_fileHdl)) != 0) {
 		return rc;
 	}
 
@@ -120,7 +117,7 @@ RC RM_Manager::OpenFile(const char *fileName, RM_FileHandle& fileHandle)
 	PF_PageHandle headerPageHdl;
 	int headerPageNum;
 	char *pData;
-	if ((rc = fileHandle.pf_fh.GetFirstPage(headerPageHdl)) ||
+	if ((rc = fileHandle.pf_fileHdl.GetFirstPage(headerPageHdl)) ||
 			(rc = headerPageHdl.GetPageNum(headerPageNum)) ||
 			(rc = headerPageHdl.GetData(pData))) {
 		return rc;
@@ -128,7 +125,7 @@ RC RM_Manager::OpenFile(const char *fileName, RM_FileHandle& fileHandle)
 
 	memcpy((char *)&fileHandle.hdr, pData, sizeof(RM_FileHdr));
 
-	if ((rc = fileHandle.pf_fh.MarkDirty(headerPageNum))) {
+	if ((rc = fileHandle.pf_fileHdl.MarkDirty(headerPageNum))) {
 		return rc;
 	}
 	fileHandle.pinnedPages.push_back(headerPageNum);
@@ -159,15 +156,15 @@ RC RM_Manager::CloseFile(RM_FileHandle &fileHandle)
 		return RM_FILE_HANDLE_CLOSED;
 	}
 
+	// Unpin all pages
 	for (std::vector<int>::iterator it = fileHandle.pinnedPages.begin();
 			it != fileHandle.pinnedPages.end();
 			++it) {
-		printf("unpin page %d\n", *it);
-		fileHandle.pf_fh.UnpinPage(*it);
+		fileHandle.pf_fileHdl.UnpinPage(*it);
 	}
 
 	// Closed the paged file
-	if ((rc = pPfMgr->CloseFile(fileHandle.pf_fh)) != 0) {
+	if ((rc = pPfMgr->CloseFile(fileHandle.pf_fileHdl)) != 0) {
 		return rc;
 	}
 

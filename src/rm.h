@@ -70,7 +70,7 @@ public:
 
 private:
 
-    PF_FileHandle pf_fh; // file handle of the paged file
+    PF_FileHandle pf_fileHdl; // file handle of the paged file
     RM_FileHdr hdr; // file header
     std::vector<int> pinnedPages; // pageNums of pages pinned in buffer
     int bFileHandleOpen; // File open flag
