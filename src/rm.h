@@ -39,13 +39,6 @@ public:
     RC GetRid (RID &rid) const;
 };
 
-/*
- * RM_FileHdr: Header structure for files
- */
-struct RM_FileHdr {
-	int recordSize; // size of each record
-};
-
 //
 // RM_FileHandle: RM File interface
 //

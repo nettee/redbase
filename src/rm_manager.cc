@@ -7,7 +7,7 @@
 #include <cstdio>
 #include <cstring>
 #include <iostream>
-#include "rm.h"
+#include "rm_internal.h"
 
 RM_Manager::RM_Manager(PF_Manager &pfm)
 {
@@ -44,7 +44,7 @@ RC RM_Manager::CreateFile(const char *fileName, int recordSize)
 	// Create a new page as header page
 	PF_PageHandle pf_pageHandle;
 	char *pData;
-	int pageNum;
+	PageNum pageNum;
 	if ((rc = pf_fileHdl.AllocatePage(pf_pageHandle)) ||
 			(rc = pf_pageHandle.GetData(pData)) ||
 			(rc = pf_pageHandle.GetPageNum(pageNum))) {
@@ -115,7 +115,7 @@ RC RM_Manager::OpenFile(const char *fileName, RM_FileHandle& fileHandle)
 
 	// Read the file header
 	PF_PageHandle headerPageHdl;
-	int headerPageNum;
+	PageNum headerPageNum;
 	char *pData;
 	if ((rc = fileHandle.pf_fileHdl.GetFirstPage(headerPageHdl)) ||
 			(rc = headerPageHdl.GetPageNum(headerPageNum)) ||
