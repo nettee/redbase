@@ -3,3 +3,6 @@
 .settings/
 
 testrel
+pf_test[123]
+rm_test
+rm_test[0]

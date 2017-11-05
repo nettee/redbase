@@ -125,5 +125,6 @@ void RM_PrintError(RC rc);
 #define RM_RECORD_SIZE_TOO_LARGE (START_RM_ERR - 0) // record size larger than page size
 #define RM_HEADER_WRITE (START_RM_ERR - 1) // incomplete write to header
 #define RM_UNIX (START_RM_ERR - 2) // Unix error
+#define RM_DATA_NULL (START_RM_ERR - 3) // data (type char *) is NULL
 
 #endif

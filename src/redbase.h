@@ -27,6 +27,7 @@ void yyerror(const char *);
 typedef int RC;
 
 #define OK_RC         0    // OK_RC return code is guaranteed to always be 0
+#define RC_OK         OK_RC
 
 #define START_PF_ERR  (-1)
 #define END_PF_ERR    (-100)
@@ -96,5 +97,7 @@ typedef char Boolean;
 #ifndef NULL
 #define NULL 0
 #endif
+
+#define null 0
 
 #endif
